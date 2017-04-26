@@ -101,6 +101,6 @@ void get_optimized_thread_blocks(unsigned int *threads, unsigned int *blocks, un
 
 void get_blocks(unsigned int threads, unsigned int data_size, unsigned int *blocks)
 {
-
+	//check if tid > max_tid --> tunning
 	*blocks = (data_size / threads) + 1; //dirty
 }
