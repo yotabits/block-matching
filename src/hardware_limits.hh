@@ -13,6 +13,7 @@ unsigned int get_max_threads_2d();
 unsigned int get_max_blocks();
 void get_threads_blocks(unsigned int *threads,unsigned int *blocks, unsigned int data_size );
 void get_optimized_thread_blocks(unsigned int *threads, unsigned int *blocks, unsigned int data_size);
+void get_blocks(unsigned int threads, unsigned int data_size, unsigned int *blocks);
 
 
 #endif /* !HARDWARE_LIMITS_HH */

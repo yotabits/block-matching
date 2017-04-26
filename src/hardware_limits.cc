@@ -97,3 +97,10 @@ void get_optimized_thread_blocks(unsigned int *threads, unsigned int *blocks, un
 		get_threads_blocks(threads , blocks, data_size);
 	}
 }
+
+
+void get_blocks(unsigned int threads, unsigned int data_size, unsigned int *blocks)
+{
+
+	*blocks = (data_size / threads) + 1; //dirty
+}

@@ -24,7 +24,7 @@ unsigned char *allocate_blocks_gpu_buffer(unsigned int size_x_y_roi, unsigned in
 
 void save_to_raw(unsigned char *gpu_img, char *filename, unsigned int img_byte_size)
 {
-		printf("byte_size: %i\n",img_byte_size);
+		//printf("byte_size: %i\n",img_byte_size);
 		unsigned char *cpu_img = (unsigned char*) malloc(img_byte_size * sizeof(unsigned char));
 		if (cpu_img == NULL)
 			printf("cannot allocate host mem \n");

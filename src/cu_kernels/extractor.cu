@@ -40,7 +40,6 @@ __global__ void extract_zone_and_replicate_k(unsigned char *img, unsigned char *
 	}
 }
 
-
 void extract_and_replicate(unsigned char *img_gpu, unsigned int size_x, unsigned int size_y, unsigned int roi_size_x_y,
 						   unsigned char *output_gpu_buffer, unsigned int y_roi)
 {
@@ -48,25 +47,12 @@ void extract_and_replicate(unsigned char *img_gpu, unsigned int size_x, unsigned
 	unsigned int threads = 0;
 	unsigned int blocks = 0;
 	get_optimized_thread_blocks(&threads,&blocks, blocks_to_compare);
-	printf("threads %i\n", threads);
-	printf("blocks %i \n", blocks);
+	//printf("threads %i\n", threads);
+	//printf("blocks %i \n", blocks);
 
-	clock_t begin = clock();
-	unsigned int i = 0;
-	while (true)
-	{
-		extract_zone_and_replicate_k<<<blocks, threads>>>(img_gpu, output_gpu_buffer, size_x, size_y, roi_size_x_y, y_roi);
-		cudaDeviceSynchronize();
-		clock_t end = clock();
-		double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
-		i++;
-		if (time_spent >= 1)
-		{
-			begin = clock();
-			printf("one sec %i\n", i);
-			i = 0;
-		}
-	}
+
+	extract_zone_and_replicate_k<<<blocks, threads>>>(img_gpu, output_gpu_buffer, size_x, size_y, roi_size_x_y, y_roi);
+
 }
 
 

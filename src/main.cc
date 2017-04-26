@@ -7,6 +7,7 @@
 #include "CImg.h"
 #include "tools.hh"
 #include "cu_kernels/extractor.cuh"
+#include "cu_kernels/compare.cuh"
 using namespace cimg_library;
 
 
@@ -61,19 +62,47 @@ img_s load_img(char *filename)
 
 int main(int argc, char **argv)
 {
-	unsigned int size_x_y_roi = 40;
+	unsigned int size_x_y_roi = 20;
 
-	//displayHeader();
+	//Init
 	img_s img = load_img("left.png");
-	//TEST//
-	cudaMemcpy((img.data_gpu), (img.data_cpu), img.byte_size, cudaMemcpyHostToDevice);
-	save_to_raw(img.data_gpu,"test.raw",img.byte_size);
+	unsigned int nb_blocks = img.size_y - size_x_y_roi;
+
+	unsigned char *block_reference; // Dummy, won't have impact on perfs in reality (small data transfer small cpu to extract)
+	cudaMalloc(&block_reference, sizeof(unsigned char) * size_x_y_roi * size_x_y_roi);
+	cudaMemset(&block_reference, 0, size_x_y_roi * size_x_y_roi);
 
 	unsigned char *block_gpu_buffer = allocate_blocks_gpu_buffer(size_x_y_roi, img.size_y);
-
+	unsigned int *output;
+	cudaMalloc(&output, nb_blocks * sizeof(unsigned int));
 	printf("img: size_x = %i, size_y = %i\n",img.size_x , img.size_y);
-	extract_and_replicate(img.data_gpu,img.size_x, img.size_y, size_x_y_roi,block_gpu_buffer, 100);
-	save_to_raw(block_gpu_buffer,"block.raw",sizeof(unsigned char) * size_x_y_roi * size_x_y_roi * (img.size_y - size_x_y_roi));
-	getchar();
+
+	//Performance TEST//
+
+	clock_t begin = clock();
+	unsigned int i = 0;
+	while (true)
+	{
+		cudaMemcpy((img.data_gpu), (img.data_cpu), img.byte_size, cudaMemcpyHostToDevice);
+		//save_to_raw(img.data_gpu,"test.raw",img.byte_size); //remove for perf test
+		extract_and_replicate(img.data_gpu,img.size_x, img.size_y, size_x_y_roi,block_gpu_buffer, 100);
+		cudaDeviceSynchronize();
+	    compute_sad(block_gpu_buffer,size_x_y_roi, nb_blocks,block_reference,output);
+		cudaDeviceSynchronize();
+		//save_to_raw(block_gpu_buffer,"block_black.raw",sizeof(unsigned char) * size_x_y_roi * size_x_y_roi * (img.size_y - size_x_y_roi));
+	    clock_t end = clock();
+		double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+		i++;
+		if (time_spent >= 1)
+		{
+			begin = clock();
+			printf("one sec %i\n", i);
+			i = 0;
+		}
+	}
+
+
+	//save_to_raw(block_gpu_buffer,"block.raw",sizeof(unsigned char) * size_x_y_roi * size_x_y_roi * (img.size_y - size_x_y_roi));
+
 	return 0;
 }
